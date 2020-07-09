@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ChosenContactsPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return ChosenContactsPageState();
   }
 }
@@ -17,20 +16,20 @@ class ChosenContactsPage extends StatefulWidget {
 class ChosenContactsPageState extends State<ChosenContactsPage> {
   List<CustomContact> savedContacts = List();
 
+  bool _loading = true;
+
   retrieveSavedContacts() async {
     var prefs = await SharedPreferences.getInstance();
-    var repo = PreferencesRepository(prefs, JsonCustomContactDesSer());
-    var temp = repo.findAll();
-    temp.forEach((tem) {
-      setState(() {
-        savedContacts.add(tem);
-      });
+    var repo =
+        PreferencesRepository<CustomContact>(prefs, JsonCustomContactDesSer());
+    savedContacts = repo.findAll();
+    setState(() {
+      _loading = false;
     });
   }
 
   @override
   void dispose() {
-    savePreferences();
     super.dispose();
   }
 
@@ -49,10 +48,9 @@ class ChosenContactsPageState extends State<ChosenContactsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return SafeArea(
       child: Scaffold(
-        body: savedContacts.isEmpty
+        body: _loading
             ? Center(
                 child: CircularProgressIndicator(),
               )
@@ -104,6 +102,7 @@ class ChosenContactsPageState extends State<ChosenContactsPage> {
         setState(() {
           savedContacts.removeAt(index);
         });
+        savePreferences();
       },
       child: ListTile(
         leading: CircleAvatar(

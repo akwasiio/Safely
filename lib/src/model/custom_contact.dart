@@ -1,4 +1,6 @@
 
+import 'dart:math';
+
 import 'package:contacts_service/contacts_service.dart';
 import 'package:pref_dessert/pref_dessert.dart';
 
@@ -30,8 +32,7 @@ class JsonCustomContactDesSer extends DesSer<CustomContact> {
   }
 
   @override
-  // TODO: implement key
-  String get key => null;
+  String get key => "nums";
 
   @override
   String serialize(CustomContact t) {

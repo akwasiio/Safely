@@ -1,13 +1,10 @@
 package shinobi.code.safely
 
-import android.app.Notification
-import android.app.Service
-import android.content.*
-import android.os.*
-import android.util.Log
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
 import io.flutter.app.FlutterActivity
-import com.github.nisrulz.sensey.Sensey
-import com.github.nisrulz.sensey.ShakeDetector
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 
@@ -20,34 +17,36 @@ class MainActivity : FlutterActivity() {
             if (call.method == "sendSms") {
                 val number = call.argument<String>("phone")
                 val message = call.argument<String>("message")
-                val numberList = number?.split(',') as ArrayList
+                val numberList = number?.split(',')
 
 
                 if (!(number.isNullOrBlank() || message.isNullOrBlank())) {
                     val intent = Intent(this, LocationService::class.java)
                     val bundle = Bundle()
                     bundle.putString("message", message)
-                    bundle.putStringArrayList("numbers", numberList)
+                    val list = ArrayList<String>()
+                    list.addAll(numberList!!)
+                    bundle.putStringArrayList("numbers", list)
                     intent.putExtras(bundle)
                     startService(intent)
 
                     result.success("success")
                     val handler = Handler()
-                    val runner = Runnable{
+                    val runner = Runnable {
                         stopService(intent)
                     }
                     handler.postDelayed(runner, 60_000)
                 } else {
                     result.error("Err", "An error occurred!", "")
                 }
-            } else if(call.method == "persistContactsNatively"){
+            } else if (call.method == "persistContactsNatively") {
                 val number = call.argument<String>("phone")
                 val prefs = getPreferences(Context.MODE_PRIVATE)
                 val editor = prefs.edit()
                 editor.putString("numbers", number)
                 editor.apply()
                 result.success("success")
-            }else {
+            } else {
                 result.notImplemented()
             }
         }
@@ -61,103 +60,7 @@ class MainActivity : FlutterActivity() {
     }
 
     companion object {
-        val CHANNEL = "io.safely.code.shinobi/"
+        const val CHANNEL = "io.safely.code.shinobi/"
     }
 
 }
-
-
-class TheService : Service() {
-    private val receiver = ScreenReceiver()
-    private var wakeLock: PowerManager.WakeLock? = null
-    lateinit var vibrator: Vibrator
-
-    override fun onCreate() {
-        super.onCreate()
-        Sensey.getInstance().init(applicationContext)
-        Log.e("Sensey_Instance", "Sensey Instance created in Service's onCreate()")
-
-        val manager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = manager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Sensor:WakeLogTag")
-        val screenStateFilter = IntentFilter()
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON)
-        screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF)
-        registerReceiver(receiver, screenStateFilter)
-
-        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    }
-
-    val shakeListener: ShakeDetector.ShakeListener = object : ShakeDetector.ShakeListener {
-        override fun onShakeDetected() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                vibrator.vibrate(
-                    VibrationEffect.createOneShot(
-                        2000,
-                        VibrationEffect.DEFAULT_AMPLITUDE
-                    )
-                )
-            else
-                vibrator.vibrate(2000)
-        }
-
-        override fun onShakeStopped() {
-            Log.e(
-                "SHAKESTOPPED::::",
-                "Shaking has stopped. I think we can all agree that Sensey rocks!"
-            )
-            Sensey.getInstance().stopShakeDetection(this)
-            val intent = Intent(applicationContext, LocationService::class.java)
-            val prefs = getSharedPreferences("fromFlutter", Context.MODE_PRIVATE)
-            val numbers = prefs.getString("numbers", null)
-            intent.putExtra("nums", numbers)
-            startService(intent)
-            val handler = Handler()
-            val runner = Runnable{
-                stopService(intent)
-            }
-            handler.postDelayed(runner, 60_000)
-        }
-    }
-
-    override fun onDestroy() {
-        unregisterReceiver(receiver)
-        if (wakeLock?.isHeld as Boolean)
-            wakeLock?.release()
-        stopForeground(true)
-        stopSelf()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        startForeground(Process.myPid(), Notification())
-        wakeLock?.acquire(100)
-        return START_STICKY
-    }
-
-    inner class ScreenReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-
-            if (intent?.action == Intent.ACTION_SCREEN_ON) {
-                Sensey.getInstance().stop()
-                stopForeground(true)
-                stopSelf()
-                Log.e("Screen_ON", "Service and Sensey stopped when screen came on!")
-            } else if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                startForeground(Process.myPid(), Notification())
-                startService(Intent(applicationContext, TheService::class.java))
-                Log.e("SCREEN_OFF ::", "RUNNABLE STARTS NEXT! SERVICE HAS STARTED. ")
-                val runnable = Runnable {
-                    Sensey.getInstance().startShakeDetection(20f, 1000, shakeListener)
-//                    Sensey.getInstance()
-//                     .startTouchTypeDetection(context, threeFingerSingleTapListener)
-                }
-                Handler().postDelayed(runnable, 500)
-            }
-        }
-    }
-}
-

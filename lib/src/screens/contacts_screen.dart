@@ -108,7 +108,6 @@ class ContactsPageState extends State<ContactsPage> {
   }
 
   void filterSearchResults(String query) {
-    print(query);
     List<CustomContact> searchedContacts = List();
     searchedContacts.addAll(_uiCustomContacts);
     if (query.isNotEmpty) {
@@ -130,7 +129,6 @@ class ContactsPageState extends State<ContactsPage> {
   }
 
   Widget buildContactsUI() {
-    print("Building Contacts UI");
     return Column(
       children: <Widget>[
         _buildSearchField(),
@@ -202,7 +200,7 @@ class ContactsPageState extends State<ContactsPage> {
         ),
         GestureDetector(
           onTap: () {
-            if (!(selectedContacts.length >= 3)) {
+            if (!(selectedContacts.length >= 1)) {
             } else {
               updateSharedPrefs();
               Navigator.push(context,
@@ -262,6 +260,8 @@ class ContactsPageState extends State<ContactsPage> {
     var prefs = await SharedPreferences.getInstance();
     var repo =
         PreferencesRepository<CustomContact>(prefs, JsonCustomContactDesSer());
+    var phones = selectedContacts.map((element) => element.contact.phones.first.value).toList(growable: false);
+    await prefs.setString("addedContacts", phones.join(","));
     repo.saveAll(selectedContacts);
   }
 }

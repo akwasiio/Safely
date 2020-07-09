@@ -1,23 +1,13 @@
 package shinobi.code.safely
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
-import com.google.android.gms.tasks.OnSuccessListener
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
-import io.nlopez.smartlocation.OnLocationUpdatedListener
-import io.nlopez.smartlocation.SmartLocation
-import java.util.concurrent.Executor
 
 
 class LocationService : Service() {
@@ -30,7 +20,7 @@ class LocationService : Service() {
     )
 
     inner class LocationListener(provider: String) : android.location.LocationListener {
-        internal var mLastLocation: Location
+        private var mLastLocation: Location
 
         init {
             Log.e(TAG, "LocationListener $provider")
@@ -40,22 +30,23 @@ class LocationService : Service() {
         override fun onLocationChanged(location: Location) {
             Log.e(TAG, "onLocationChanged: $location")
             mLastLocation.set(location)
-            Log.v(
-                "LastLocation",
-                mLastLocation.latitude.toString() + "  " + mLastLocation.longitude.toString()
-            )
-            sendTextMessage("", numbers)
+            sendTextMessage(message, numbers)
 
         }
 
-        fun sendTextMessage(mess: String, num: ArrayList<String>) {
+        private fun sendTextMessage(mess: String, num: ArrayList<String>) {
             val long = mLastLocation.longitude
             val lat = mLastLocation.latitude
 
             val maps = "http://maps.google.com/?q=$lat,$long"
             for (i in 0 until num.size) {
                 Thread.sleep(2000)
-                sendSms(num[i], "Hey, I might be in trouble. Please find me at $maps")
+                sendSms(
+                        num[i],
+                        message = """Hey, I might be in trouble. Please find me at $maps .
+                            | $message
+                        """.trimMargin()
+                )
             }
         }
         override fun onProviderDisabled(provider: String) {
@@ -83,9 +74,9 @@ class LocationService : Service() {
         Log.e(TAG, "onStartCommand")
         super.onStartCommand(intent, flags, startId)
         val bundle = intent?.extras
-        numbers = bundle?.getStringArrayList("numbers")!!
-        message = bundle.getString("message")!!
-        return Service.START_STICKY
+        numbers = bundle?.getStringArrayList("nums")!!
+        message = bundle.getString("message") ?: "I'm caught up in an emergency."
+        return START_STICKY
     }
 
     override fun onCreate() {
@@ -125,7 +116,6 @@ class LocationService : Service() {
                 } catch (ex: Exception) {
                     Log.i(TAG, "fail to remove location listners, ignore", ex)
                 }
-
             }
         }
     }

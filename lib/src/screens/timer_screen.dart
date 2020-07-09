@@ -63,12 +63,11 @@ class _TimerScreenState extends State<TimerScreen>
 
   retrieveSavedContacts() async {
     var prefs = await SharedPreferences.getInstance();
-    var repo = PreferencesRepository(prefs, JsonCustomContactDesSer());
+    var repo = PreferencesRepository<CustomContact>(prefs, JsonCustomContactDesSer());
     var temp = repo.findAll();
     List holder = [];
 
     temp.forEach((tem) {
-      print("Inside forEach()");
       setState(() {
         var num = tem.contact.phones.toList();
         var tempo = num[0].value;
@@ -89,7 +88,7 @@ class _TimerScreenState extends State<TimerScreen>
   void sendingSms() async {
     await platform.invokeMethod("sendSms", <String, dynamic>{
       "phone": numbers,
-      "message": "The school dier we go finish am. Sent with love, Safely."
+      "message": "Emergency"
     });
   }
 
