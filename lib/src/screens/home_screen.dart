@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import "package:easy_dialogs/easy_dialogs.dart";
 import 'package:flutter/services.dart';
@@ -51,39 +52,36 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildHomeScreen() {
     return ListView(
+      padding: const EdgeInsets.all(16.0),
       children: <Widget>[
-        Container(
-          padding: const EdgeInsets.only(left: 8.0),
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: <Widget>[
-                // AppBar
-                Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: _buildAppBar()),
-                SizedBox(
-                  height: 70.0,
-                ),
-                _buildButtonToTriggerDialog(),
-                SizedBox(
-                  height: 50.0,
-                ),
-                _buildButtonToTriggerDurationDialog(),
-                SizedBox(
-                  height: 50.0,
-                ),
-                _buildTextField(),
-                SizedBox(
-                  height: 30.0,
-                ),
-                _buildStartTimerButton()
-              ],
+        Padding(
+            padding: const EdgeInsets.only(top: 8.0), child: _buildAppBar()),
+        SizedBox(
+          height: 60.0,
+        ),
+        _buildButtonToTriggerDialog(),
+        SizedBox(
+          height: 40.0,
+        ),
+        _buildButtonToTriggerDurationDialog(),
+        SizedBox(
+          height: 40.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            keyboardType: TextInputType.multiline,
+            maxLines: 10,
+            decoration: InputDecoration(
+              hintText: "What are you wearing? Are you picking a taxi? etc.",
+              border: OutlineInputBorder(),
             ),
           ),
         ),
+        SizedBox(
+          height: 20.0,
+        ),
+        _buildStartTimerButton()
       ],
     );
   }
@@ -116,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen>
             child: IconButton(
               icon: Icon(
                 Icons.settings,
-                color: Colors.black54,
+                color: Theme.of(context).accentColor,
                 size: 30.0,
               ),
               onPressed: () {
@@ -130,68 +128,46 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildButtonToTriggerDialog() {
-    return RawMaterialButton(
+    return RaisedButton(
+      color: Theme.of(context).primaryColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Text(
+          userActivity,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.subtitle2.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+      ),
       onPressed: () {
         _openDialog();
       },
-      splashColor: Colors.grey,
-      child: Container(
-        width: 300.0,
-        height: 50.0,
-        decoration: ShapeDecoration(shape: OutlineInputBorder()),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Text(userActivity),
-            ),
-            Spacer(
-              flex: 1,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Icon(
-                Icons.arrow_drop_down,
-                size: 18.0,
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
   Widget _buildButtonToTriggerDurationDialog() {
-    return RawMaterialButton(
+    return RaisedButton(
+      color: Theme.of(context).primaryColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Text(
+          durationSelected,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.subtitle2.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       onPressed: () {
         _showDurationPickerDialog();
       },
-      splashColor: Colors.grey,
-      child: Container(
-        width: 300.0,
-        height: 50.0,
-        decoration: ShapeDecoration(shape: OutlineInputBorder()),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Text(durationSelected),
-            ),
-            Spacer(
-              flex: 1,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Icon(
-                Icons.arrow_drop_down,
-                size: 18.0,
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
@@ -235,51 +211,46 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  Widget _buildTextField() {
-    return Container(
-      height: 220,
-      margin: const EdgeInsets.all(8.0),
-      padding: EdgeInsets.only(bottom: 40.0),
-      child: TextField(
-        keyboardType: TextInputType.multiline,
-        maxLines: 99,
-        decoration: InputDecoration(
-            hintText: "What are you wearing? Are you picking a taxi?",
-            border: OutlineInputBorder()),
-      ),
-    );
-  }
-
   int hours;
   int minutes;
 
   Widget _buildStartTimerButton() {
-    return RawMaterialButton(
-        onPressed: () {
-          if (userActivity.toLowerCase() != "choose activity" &&
-              (hours != null && minutes != null)) {
-            var infoObj = UserActivityInfo(
-                activityTitle: userActivity,
-                duration: Duration(hours: hours, minutes: minutes));
+    return RaisedButton(
+      color: Theme.of(context).primaryColor,
+      onPressed: () {
+        if (userActivity.toLowerCase() != "choose activity" &&
+            (hours != null && minutes != null)) {
+          var infoObj = UserActivityInfo(
+              activityTitle: userActivity,
+              duration: Duration(hours: hours, minutes: minutes));
 
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => TimerScreen(
-                          userActivityInfo: infoObj,
-                        )));
-          } else if (userActivity.toLowerCase() == "choose activity") {
-            print("Pick an activity");
-          } else if (hours == 0 && minutes == 0) {
-            print("Pick a duration");
-          }
-        },
-        splashColor: Colors.green,
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        fillColor: Colors.grey,
-        child: Text("Start Timer"),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10.0))));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TimerScreen(
+                userActivityInfo: infoObj,
+              ),
+            ),
+          );
+        } else if (userActivity.toLowerCase() == "choose activity") {
+          print("Pick an activity");
+        } else if (hours == 0 && minutes == 0) {
+          print("Pick a duration");
+        }
+      },
+      padding: const EdgeInsets.all(15.0),
+      child: Text(
+        "Start Timer",
+        style: Theme.of(context).primaryTextTheme.bodyText2.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(10.0),
+        ),
+      ),
+    );
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -297,8 +268,9 @@ class _HomeScreenState extends State<HomeScreen>
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10.0),
-                      topRight: Radius.circular(10.0)),
+                    topLeft: Radius.circular(10.0),
+                    topRight: Radius.circular(10.0),
+                  ),
                 ),
                 child: _buildBottomSheetContent(),
               ),
@@ -316,49 +288,53 @@ class _HomeScreenState extends State<HomeScreen>
             child: Text(
               "Settings",
               style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24.0),
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 24.0,
+              ),
             ),
           ),
         ),
         ListTile(
           leading: Icon(
             Icons.remove_red_eye,
-            color: Colors.blueGrey,
+            color: Theme.of(context).accentColor,
           ),
           title: Text("View selected contacts"),
           trailing: Icon(
             Icons.keyboard_arrow_right,
             size: 18.0,
-            color: Colors.blueGrey,
+            color: Theme.of(context).accentColor,
           ),
           onTap: () {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => ChosenContactsPage()));
+              context,
+              MaterialPageRoute(
+                builder: (BuildContext context) => ChosenContactsPage(),
+              ),
+            );
           },
         ),
         ListTile(
           leading: Icon(
             Icons.add,
-            color: Colors.blueGrey,
+            color: Theme.of(context).accentColor,
           ),
           title: Text("Add New Contacts"),
           trailing: Icon(
             Icons.keyboard_arrow_right,
             size: 18.0,
-            color: Colors.blueGrey,
+            color: Theme.of(context).accentColor,
           ),
           onTap: () {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => ContactsPage()));
+              context,
+              MaterialPageRoute(
+                builder: (BuildContext context) => ContactsPage(),
+              ),
+            );
           },
         ),
-
       ],
     );
   }

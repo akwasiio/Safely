@@ -1,4 +1,3 @@
-
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:pref_dessert/pref_dessert.dart';
@@ -209,8 +208,9 @@ class ContactsPageState extends State<ContactsPage> {
           },
           child: Container(
             width: MediaQuery.of(context).size.width,
-            color:
-                selectedContacts.length >= 3 ? Colors.amber : Colors.grey[850],
+            color: selectedContacts.length >= 3
+                ? Theme.of(context).accentColor
+                : Colors.grey[850],
             height: 50.0,
             child: Center(
               child: Text(
@@ -260,7 +260,9 @@ class ContactsPageState extends State<ContactsPage> {
     var prefs = await SharedPreferences.getInstance();
     var repo =
         PreferencesRepository<CustomContact>(prefs, JsonCustomContactDesSer());
-    var phones = selectedContacts.map((element) => element.contact.phones.first.value).toList(growable: false);
+    var phones = selectedContacts
+        .map((element) => element.contact.phones.first.value)
+        .toList(growable: false);
     await prefs.setString("addedContacts", phones.join(","));
     repo.saveAll(selectedContacts);
   }

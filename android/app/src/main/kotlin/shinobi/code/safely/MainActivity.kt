@@ -26,7 +26,7 @@ class MainActivity : FlutterActivity() {
                     bundle.putString("message", message)
                     val list = ArrayList<String>()
                     list.addAll(numberList!!)
-                    bundle.putStringArrayList("numbers", list)
+                    bundle.putStringArrayList("nums", list)
                     intent.putExtras(bundle)
                     startService(intent)
 

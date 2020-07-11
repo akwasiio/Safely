@@ -50,6 +50,7 @@ class ChosenContactsPageState extends State<ChosenContactsPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(title: Text("Selected Contacts"),),
         body: _loading
             ? Center(
                 child: CircularProgressIndicator(),
@@ -59,25 +60,9 @@ class ChosenContactsPageState extends State<ChosenContactsPage> {
     );
   }
 
-  Widget _buildTitleBar() {
-    return Container(
-      color: Colors.blueGrey[200],
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
-          child: Text(
-            "Selected Contacts",
-            style: TextStyle(fontSize: 24.0),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildChosenContactsList() {
     return Column(
       children: <Widget>[
-        _buildTitleBar(),
         Expanded(
           child: ListView.builder(
             itemCount: savedContacts.length,
